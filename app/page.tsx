@@ -1,46 +1,80 @@
-import { demos } from '@/lib/demos';
-import Link from 'next/link';
+"use client"
+import { useRef, useState } from 'react';
+import '@/styles/dist.css';
+import { copyImage } from '@/lib/utils/copyImage';
+import { CodeEditor } from '@/lib/components/CodeEditor';
+import { BsSun, BsMoonFill, BsDownload, BsCodeSlash } from 'react-icons/bs';
+import { BiCopy } from 'react-icons/bi';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-export default function Page() {
+import {
+  darkThemeStyle,
+  DEFAULT_WRAPPER_WIDTH,
+  LANGUAGES,
+  lightThemeStyle,
+  Theme,
+} from '@/lib/utils/constant';
+import { Header } from '@/lib/components/Header';
+import { useMouseMove } from '@/lib/hooks/useMouseMove';
+import { downloadImage } from '@/lib/utils/downloadImage';
+
+export default function App() {
+  const [theme, setTheme] = useState(Theme.DARK);
+  const [wrapperWidth, setWrapperWidth] = useState(DEFAULT_WRAPPER_WIDTH);
+  const isDarkTheme = theme === Theme.DARK;
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  useMouseMove(setWrapperWidth);
+  const textAreaBackground = isDarkTheme
+    ? darkThemeStyle.backgroundColor
+    : lightThemeStyle.backgroundColor;
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-8 text-white">
-        {demos
-          .filter((section) =>
-            section.items.some((x) => typeof x.isDisabled === 'undefined'),
-          )
-          .map((section) => {
-            return (
-              <div key={section.name} className="space-y-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                  {section.name}
-                </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                  {section.items
-                    .filter((item) => !item.isDisabled)
-                    .map((item) => {
-                      return (
-                        <Link
-                          href={`/${item.slug}`}
-                          key={item.name}
-                          className="block space-y-1.5 rounded-lg border border-white/10 px-4 py-3 hover:border-white/20"
-                        >
-                          <div>{item.name}</div>
-
-                          {item.description ? (
-                            <div className="line-clamp-3 text-sm text-zinc-400">
-                              {item.description}
-                            </div>
-                          ) : null}
-                        </Link>
-                      );
-                    })}
-                </div>
-              </div>
-            );
-          })}
+    <>
+      <ToastContainer />
+      <div className="menu-container">
+        <div
+          className="menu-item"
+          onClick={() => setTheme(isDarkTheme ? Theme.LIGHT : Theme.DARK)}
+        >
+          {isDarkTheme ? <BsMoonFill size={20} /> : <BsSun size={20} />}
+          Theme
+        </div>
+        <div
+          className="menu-item"
+          onClick={() => copyImage(wrapperRef.current)}
+        >
+          <BiCopy size={20} />
+          Copy
+        </div>
+        <div
+          className="menu-item"
+          onClick={() => downloadImage(wrapperRef.current)}
+        >
+          <BsDownload size={20} />
+          Downloadzzz
+        </div>
       </div>
-    </div>
+
+      <div className="editor">
+        <div
+          className="wrapper"
+          style={{ width: wrapperWidth }}
+          ref={wrapperRef}
+        >
+          <div id="left-handler"></div>
+          <div id="right-handler"></div>
+          <div
+            className="container"
+            style={{
+              backgroundImage: textAreaBackground,
+            }}
+          >
+            <Header />
+            <CodeEditor isDarkTheme={isDarkTheme} />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
